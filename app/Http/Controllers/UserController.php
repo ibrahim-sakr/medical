@@ -6,9 +6,6 @@ use App\Mail\Newsletter;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Kreait\Firebase\Factory;
-use Kreait\Firebase\ServiceAccount;
-use Kreait\Firebase\Messaging\CloudMessage;
 
 class UserController extends Controller
 {
@@ -28,7 +25,7 @@ class UserController extends Controller
         $user      = $userModel->create($data);
     }
 
-    public function sendMail(Request $request)
+    public function mail(Request $request)
     {
         $subject = 'reservation';
         $message = 'hello';
@@ -39,22 +36,35 @@ class UserController extends Controller
         Mail::to('ebrahimes@gmail.com')->send($mail);
     }
 
-    public function sendNotification(Request $request)
+    public function notification(Request $request)
     {
-        $serviceAccount = ServiceAccount::fromJsonFile(base_path() . '/medical-system-firebase.json');
-        $firebase = (new Factory)
-            ->withServiceAccount($serviceAccount)
-            ->create();
+        $payload = [
+            'to'              => '/topics/topic',
+            'priority'        => 'high',
+            "mutable_content" => TRUE,
+            "notification"    => [
+                "title" => 'My Noti',
+                "body"  => 'My Noti Body',
+            ],
+            'data'            => [
+                'hema' => 'sakr'
+            ],
+        ];
 
-        $topic = 'a-topic';
-        $notification = $request->notification;
-        $data =$request->data;
-        $message = CloudMessage::fromArray([
-            'topic' => $topic,
-//            'notification' => [$notification], // optional
-//            'data' => [$data], // optional
-        ]);
-        $messaging = $firebase->getMessaging();
-        $messaging->send($message);
+        $headers = [
+            'Authorization:key=' . env('FCM_SERVER_KEY'),
+            'Content-Type: application/json',
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, env('FCM_BASE_URL'));
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        $result = curl_exec($ch);
+        curl_close($ch);
+        var_dump($result);
     }
 }
