@@ -6,6 +6,9 @@ use App\Mail\Newsletter;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
+use Kreait\Firebase\Messaging\CloudMessage;
 
 class UserController extends Controller
 {
@@ -34,5 +37,24 @@ class UserController extends Controller
 
         $mail = new Newsletter($subject, $message);
         Mail::to('ebrahimes@gmail.com')->send($mail);
+    }
+
+    public function sendNotification(Request $request)
+    {
+        $serviceAccount = ServiceAccount::fromJsonFile(base_path() . '/medical-system-firebase.json');
+        $firebase = (new Factory)
+            ->withServiceAccount($serviceAccount)
+            ->create();
+
+        $topic = 'a-topic';
+        $notification = $request->notification;
+        $data =$request->data;
+        $message = CloudMessage::fromArray([
+            'topic' => $topic,
+//            'notification' => [$notification], // optional
+//            'data' => [$data], // optional
+        ]);
+        $messaging = $firebase->getMessaging();
+        $messaging->send($message);
     }
 }

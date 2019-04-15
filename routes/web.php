@@ -1,5 +1,6 @@
 <?php
 
+
 /** @var $router Laravel\Lumen\Routing\Router */
 
 $router->group(['prefix' => 'api'], function ($router) {
@@ -10,5 +11,8 @@ $router->group(['prefix' => 'api'], function ($router) {
     });
 
     $router->get('send_mail', 'UserController@sendMail');
+    $router->get('send_notification', 'UserController@sendNotification');
 });
+
+
 
