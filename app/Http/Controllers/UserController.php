@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: hadeer
- * Date: 4/14/19
- * Time: 1:07 AM
- */
 
 namespace App\Http\Controllers;
 
@@ -28,17 +22,17 @@ class UserController extends Controller
     public function store($data)
     {
         $userModel = new User;
-        $user = $userModel->create($data);
+        $user      = $userModel->create($data);
     }
 
     public function sendMail(Request $request)
     {
         $subject = 'reservation';
-        $message ='hello' ;
+        $message = 'hello';
+
+        $this->store($request->all());
 
         $mail = new Newsletter($subject, $message);
-        Mail::to('eng.hader2012@gmail.com')->send($mail);
-
-        $user = $this->store($request->all());
+        Mail::to('ebrahimes@gmail.com')->send($mail);
     }
 }
