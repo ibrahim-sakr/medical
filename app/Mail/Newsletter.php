@@ -2,26 +2,20 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 
 class Newsletter extends Mailable
 {
-    use Queueable, SerializesModels;
-
-    public $subject;
-    public $message;
+    public $body;
 
     /**
-     * Create a new message instance.
-     * @param string $subject
-     * @param string $message
+     * Newsletter constructor.
+     * @param array $body
      */
-    public function __construct(string $subject, string $message)
+    public function __construct(array $body)
     {
-        $this->subject = $subject;
-        $this->message = $message;
+        $this->subject = $body['title'];
+        $this->body = $body;
     }
 
     /**

@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Mail\Newsletter;
 use App\User;
+use Exception;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -16,55 +20,112 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        //
     }
 
-    public function store($data)
+    /**
+     * @param array $data
+     * @return string
+     * @throws Exception
+     * @author Ibrahim Sakr <ibrahim.sakr@tajawal.com>
+     */
+    private function store(array $data): string
     {
-        $userModel = new User;
-        $user      = $userModel->create($data);
+        $validator = Validator::make($data, [
+            'name'        => ['required', 'min:3'],
+            'phone'       => ['required', 'numeric'],
+            'date'        => ['required', 'date'],
+            'doctor_name' => ['required', 'min:3'],
+        ]);
+
+        if ($validator->fails()) {
+            throw new Exception(json_encode($validator->errors()), 400);
+        }
+
+        // check if the user exists before
+        $title = 'Registered User';
+        $user  = User::where(([
+            ['phone', $data['phone']],
+            ['date', $data['date']],
+            ['doctor_name', $data['doctor_name']],
+        ]))->first();
+
+        if ($user === NULL) {
+            // create it
+            User::create($data);
+        } else {
+            $title = 'Updated User';
+
+            // update user
+            $user->update($data);
+        }
+
+        return $title;
     }
 
+    /**
+     * @param Request $request
+     * @throws Exception
+     * @author Ibrahim Sakr <ibrahim.sakr@tajawal.com>
+     */
     public function mail(Request $request)
     {
-        $subject = 'reservation';
-        $message = 'hello';
+        $body          = $request->all();
+        $body['title'] = $this->store($body);
 
-        $this->store($request->all());
-
-        $mail = new Newsletter($subject, $message);
+        $mail = new Newsletter($body);
         Mail::to('ebrahimes@gmail.com')->send($mail);
     }
 
+    /**
+     * @param Request $request
+     * @author Ibrahim Sakr <ibrahim.sakr@tajawal.com>
+     */
     public function notification(Request $request)
     {
-        $payload = [
-            'to'              => '/topics/topic',
-            'priority'        => 'high',
-            "mutable_content" => TRUE,
-            "notification"    => [
-                "title" => 'My Noti',
-                "body"  => 'My Noti Body',
-            ],
-            'data'            => [
-                'hema' => 'sakr'
-            ],
-        ];
+        Log::info(json_encode($request->all()));
 
-        $headers = [
-            'Authorization:key=' . env('FCM_SERVER_KEY'),
-            'Content-Type: application/json',
-        ];
+//        $xml = file_get_contents(base_path() . '/dummy.xml');
+//        $xml = simplexml_load_string($xml);
+//
+//        $channelName = (string)$xml->entry->author->name;
+//        $videoUrl    = (string)$xml->entry->link->attributes()['href'];
+//        $videoTitle  = (string)$xml->entry->title;
+//
+//        $payload = [
+//            'to'              => '/topics/' . env('FCM_TOPIC'),
+//            'priority'        => 'high',
+//            "mutable_content" => TRUE,
+//            "notification"    => [
+//                "title" => $channelName . ' :: New Video',
+//                "body"  => 'a new video published on ' . $channelName . ' with title ' . $videoTitle,
+//            ],
+//            'data'            => [
+//                'video_url' => $videoUrl,
+//            ],
+//        ];
+//
+//        $headers = [
+//            'Authorization' => 'key=' . env('FCM_SERVER_KEY'),
+//            'Content-Type'  => 'application/json',
+//        ];
+//
+//        $this->sendHttp(env('FCM_BASE_URL'), $payload, $headers);
+    }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, env('FCM_BASE_URL'));
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        $result = curl_exec($ch);
-        curl_close($ch);
-        var_dump($result);
+    /**
+     * @param string $url
+     * @param array $body
+     * @param array $headers
+     * @author Ibrahim Sakr <ibrahim.sakr@tajawal.com>
+     */
+    private function sendHttp(string $url, array $body, array $headers = [])
+    {
+        (new Client())->post(
+            $url,
+            [
+                'headers' => $headers,
+                'json'    => $body,
+            ]
+        );
     }
 }
