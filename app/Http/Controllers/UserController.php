@@ -78,38 +78,52 @@ class UserController extends Controller
 
     /**
      * @param Request $request
+     * @return int
      * @author Ibrahim Sakr <ibrahim.sakr@tajawal.com>
      */
-    public function notification(Request $request)
+    public function notification(Request $request): int
     {
-        Log::info(json_encode($request->all()));
+        if ($request->get('hub_challenge', 0)) {
+            Log::info('hub_challenge: ' . $request->get('hub_challenge', 0));
+            return (int)$request->get('hub_challenge', 0);
+        }
 
-//        $xml = file_get_contents(base_path() . '/dummy.xml');
-//        $xml = simplexml_load_string($xml);
-//
-//        $channelName = (string)$xml->entry->author->name;
-//        $videoUrl    = (string)$xml->entry->link->attributes()['href'];
-//        $videoTitle  = (string)$xml->entry->title;
-//
-//        $payload = [
-//            'to'              => '/topics/' . env('FCM_TOPIC'),
-//            'priority'        => 'high',
-//            "mutable_content" => TRUE,
-//            "notification"    => [
-//                "title" => $channelName . ' :: New Video',
-//                "body"  => 'a new video published on ' . $channelName . ' with title ' . $videoTitle,
-//            ],
-//            'data'            => [
-//                'video_url' => $videoUrl,
-//            ],
-//        ];
-//
-//        $headers = [
-//            'Authorization' => 'key=' . env('FCM_SERVER_KEY'),
-//            'Content-Type'  => 'application/json',
-//        ];
-//
-//        $this->sendHttp(env('FCM_BASE_URL'), $payload, $headers);
+        Log::info(json_encode('XML content: ' . $request->getContent()));
+
+        $xml = simplexml_load_string($request->getContent());
+
+        $channelName = (string)$xml->entry->author->name ?? '';
+        $videoUrl    = (string)$xml->entry->link->attributes()['href'] ?? '';
+        $videoTitle  = (string)$xml->entry->title ?? '';
+
+        Log::info('channel name: ' . $channelName);
+        Log::info('video url: ' . $videoUrl);
+        Log::info('video title: ' . $videoTitle);
+
+        if (!$channelName || !$videoUrl || !$videoTitle) {
+            return 1;
+        }
+
+        $payload = [
+            'to'              => '/topics/' . env('FCM_TOPIC'),
+            'priority'        => 'high',
+            "mutable_content" => TRUE,
+            "notification"    => [
+                "title" => $channelName . ' :: New Video',
+                "body"  => 'a new video published on ' . $channelName . ' with title ' . $videoTitle,
+            ],
+            'data'            => [
+                'video_url' => $videoUrl,
+            ],
+        ];
+
+        $headers = [
+        'Authorization' => 'key=' . env('FCM_SERVER_KEY'),
+        'Content-Type'  => 'application/json',
+    ];
+
+        $this->sendHttp(env('FCM_BASE_URL'), $payload, $headers);
+        return 1;
     }
 
     /**
