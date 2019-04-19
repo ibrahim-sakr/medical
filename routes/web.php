@@ -10,9 +10,7 @@ $router->group(['prefix' => 'api'], function ($router) {
         return $router->app->version();
     });
 
-    $router->get('send_mail', 'UserController@sendMail');
-    $router->get('send_notification', 'UserController@sendNotification');
+    $router->post('mail', 'UserController@mail');
+    $router->get('notification', 'UserController@notification');
+    $router->post('notification', 'UserController@notification');
 });
-
-
-

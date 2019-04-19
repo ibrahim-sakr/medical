@@ -6,8 +6,11 @@
     "type": "project",
     "require": {
         "php": ">=7.1.3",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-simplexml": "*",
+        "guzzlehttp/guzzle": "~6.0",
         "illuminate/mail": "^5.8",
-        "kreait/firebase-php": "^4.18",
         "laravel/lumen-framework": "5.8.*",
         "vlucas/phpdotenv": "^3.3"
     },
