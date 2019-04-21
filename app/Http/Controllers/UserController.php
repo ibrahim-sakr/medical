@@ -11,17 +11,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * Class UserController
+ * @package App\Http\Controllers
+ * @author Ibrahim Sakr <ibrahim.sakr@tajawal.com>
+ */
 class UserController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-    }
-
     /**
      * @param array $data
      * @return string
@@ -96,9 +92,11 @@ class UserController extends Controller
         $videoUrl    = (string)$xml->entry->link->attributes()['href'] ?? '';
         $videoTitle  = (string)$xml->entry->title ?? '';
 
-        Log::info('channel name: ' . $channelName);
-        Log::info('video url: ' . $videoUrl);
-        Log::info('video title: ' . $videoTitle);
+        Log::info(json_encode([
+            'channel_name' => $channelName,
+            'video_url'    => $videoUrl,
+            'video_title'  => $videoTitle,
+        ]));
 
         if (!$channelName || !$videoUrl || !$videoTitle) {
             return 1;
@@ -118,9 +116,14 @@ class UserController extends Controller
         ];
 
         $headers = [
-        'Authorization' => 'key=' . env('FCM_SERVER_KEY'),
-        'Content-Type'  => 'application/json',
-    ];
+            'Authorization' => 'key=' . env('FCM_SERVER_KEY'),
+            'Content-Type'  => 'application/json',
+        ];
+
+        Log::info(json_encode([
+            'headers' => $headers,
+            'payload' => $payload,
+        ]));
 
         $this->sendHttp(env('FCM_BASE_URL'), $payload, $headers);
         return 1;
