@@ -2,6 +2,8 @@
 
 
 /** @var $router Laravel\Lumen\Routing\Router */
+$router->get('ping', 'MonitorController@ping');
+$router->get('health', 'MonitorController@health');
 
 $router->group(['prefix' => 'api'], function ($router) {
 

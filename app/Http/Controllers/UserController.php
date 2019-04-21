@@ -11,17 +11,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * Class UserController
+ * @package App\Http\Controllers
+ * @author Ibrahim Sakr <ibrahim.sakr@tajawal.com>
+ */
 class UserController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-    }
-
     /**
      * @param array $data
      * @return string
