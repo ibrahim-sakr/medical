@@ -69,7 +69,7 @@ class UserController extends Controller
         $body['title'] = $this->store($body);
 
         $mail = new Newsletter($body);
-        Mail::to('ask.habdallah@gmail.com')->send($mail);
+        Mail::to(env('MAIL_TO', ''))->send($mail);
     }
 
     /**
