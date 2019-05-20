@@ -27,10 +27,14 @@ class UserController extends Controller
     private function store(array $data): string
     {
         $validator = Validator::make($data, [
-            'name'        => ['required', 'min:3'],
-            'phone'       => ['required', 'numeric'],
-            'date'        => ['required', 'date'],
-            'doctor_name' => ['required', 'min:3'],
+            'name'                => ['required', 'min:3'],
+            'phone'               => ['required', 'numeric'],
+            'datOfSurgery'        => ['required', 'date'],
+            'doctorName'          => ['required', 'min:3'],
+            'weightBeforeSurgery' => ['required'],
+            'heightBeforeSurgery' => ['required'],
+            'currentWeight'       => ['required'],
+            'currentHeight'       => ['required'],
         ]);
 
         if ($validator->fails()) {
@@ -41,8 +45,8 @@ class UserController extends Controller
         $title = 'Registered User';
         $user  = User::where(([
             ['phone', $data['phone']],
-            ['date', $data['date']],
-            ['doctor_name', $data['doctor_name']],
+            ['datOfSurgery', $data['datOfSurgery']],
+            ['doctorName', $data['doctorName']],
         ]))->first();
 
         if ($user === NULL) {
